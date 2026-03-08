@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Video Feed</title>
+
+<style>
+body{
+margin:0;
+background:black;
+font-family:sans-serif;
+color:white;
+}
+
+.feed{
+height:100vh;
+overflow-y:scroll;
+scroll-snap-type:y mandatory;
+}
+
+.video-card{
+height:100vh;
+scroll-snap-align:start;
+position:relative;
+}
+
+video{
+width:100%;
+height:100%;
+object-fit:cover;
+}
+
+.upload-btn{
+position:fixed;
+bottom:25px;
+left:50%;
+transform:translateX(-50%);
+width:60px;
+height:60px;
+border-radius:50%;
+background:white;
+color:black;
+font-size:40px;
+display:flex;
+align-items:center;
+justify-content:center;
+cursor:pointer;
+}
+
+input{
+display:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="feed" id="feed"></div>
+
+<input type="file" id="fileInput" accept="video/*">
+
+<div class="upload-btn" id="uploadBtn">+</div>
+
+<script>
+
+const PUBLI_KEY = "dy2q53l0GLbJJpuj3v0v";
+const PUBLI_UPLOAD_URL = "https://api.publit.io/v1/files/create";
+
+const fileInput = document.getElementById("fileInput");
+const uploadBtn = document.getElementById("uploadBtn");
+const feed = document.getElementById("feed");
+
+uploadBtn.onclick = () => fileInput.click();
+
+fileInput.onchange = async () => {
+
+const file = fileInput.files[0];
+if(!file) return;
+
+alert("Uploading...");
+
+const formData = new FormData();
+formData.append("file",file);
+formData.append("title",file.name);
+formData.append("api_key",PUBLI_KEY);
+
+try{
+
+const res = await fetch(PUBLI_UPLOAD_URL,{
+method:"POST",
+body:formData
+});
+
+const data = await res.json();
+
+console.log(data);
+
+let videoURL = data.url_preview || data.url_download || data.url;
+
+if(videoURL){
+
+addVideo(videoURL);
+
+}else{
+
+alert("Upload gagal");
+
+}
+
+}catch(err){
+
+console.error(err);
+alert("Upload error");
+
+}
+
+};
+
+function addVideo(url){
+
+const card = document.createElement("div");
+card.className="video-card";
+
+const video = document.createElement("video");
+video.src=url;
+video.controls=true;
+video.autoplay=true;
+video.loop=true;
+
+card.appendChild(video);
+feed.prepend(card);
+
+}
+
+</script>
+
+</body>
+</html>
